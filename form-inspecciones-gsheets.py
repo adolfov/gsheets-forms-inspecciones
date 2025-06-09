@@ -9,7 +9,7 @@ import numpy as np
 conn = st.connection("gsheets", type=GSheetsConnection)
 
 # Consulta de la información en la Base de datos
-inspecciones = conn.read(spreadsheet="https://docs.google.com/spreadsheets/d/1Zfsod0NcRCuOHsmFjMweubuGnLGR_TiErCamDoNyKwM", worksheet="inspecciones")
+inspecciones = conn.read(worksheet="inspecciones")
 vehiculos = conn.read(worksheet="vehiculos")
 rutas = conn.read(worksheet="rutas")
 rutas["numero_ruta"] = rutas["numero_ruta"].astype(int)
