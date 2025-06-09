@@ -1,10 +1,6 @@
 """ CREACIÓN DE FORMULARIO WEB CON STREAMLIT """
 
-# Para iniciar streamlit: cd C:\Users\alanc\PycharmProjects\streamlit-devs\form-inspecciones-gsheets
-# streamlit run form-inspecciones-gsheets.py
-
 import streamlit as st
-from streamlit_gsheets import GSheetsConnection
 import pandas as pd
 import numpy as np
 
