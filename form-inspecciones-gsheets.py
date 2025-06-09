@@ -5,17 +5,15 @@ from streamlit_gsheets import GSheetsConnection
 import pandas as pd
 import numpy as np
 
-url = "https://docs.google.com/spreadsheets/d/1Zfsod0NcRCuOHsmFjMweubuGnLGR_TiErCamDoNyKwM"
-
 # Conexión a la Base de datos en Google Sheets
-conn = st.connection("gsheets", type=GSheetsConnection)
+conn = st.experimental.connection("gsheets", type=GSheetsConnection)
 
 # Consulta de la información en la Base de datos
-inspecciones = conn.read(spreadsheet=url, worksheet="inspecciones")
-vehiculos = conn.read(spreadsheet=url, worksheet="vehiculos")
-rutas = conn.read(spreadsheet=url, worksheet="rutas")
+inspecciones = conn.read(worksheet="inspecciones")
+vehiculos = conn.read(worksheet="vehiculos")
+rutas = conn.read(worksheet="rutas")
 rutas["numero_ruta"] = rutas["numero_ruta"].astype(int)
-partes = conn.read(spreadsheet=url, worksheet="partes")
+partes = conn.read(worksheet="partes")
 partes_unicas = partes["parte"].unique()
 
 # Título de la página web
