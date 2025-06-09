@@ -7,7 +7,7 @@ import numpy as np
 
 # Conexión a la Base de datos en Google Sheets
 conn = st.connection("gsheets", type=GSheetsConnection)
-spreadsheet_id = "1Zfsod0NcRCuOHsmFjMweubuGnLGR_TiErCamDoNyKwM"
+spreadsheet_id = "https://docs.google.com/spreadsheets/d/1Zfsod0NcRCuOHsmFjMweubuGnLGR_TiErCamDoNyKwM"
 
 # Consulta de la información en la Base de datos
 inspecciones = conn.read(spreadsheet=spreadsheet_id, worksheet="inspecciones")
