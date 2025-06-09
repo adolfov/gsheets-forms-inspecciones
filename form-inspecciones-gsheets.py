@@ -236,5 +236,26 @@ with tab_2:
 
 with tab_3:
 
-    st.subheader("Base de datos de Vehículos Va-y-Ven")
-    st.dataframe(vehiculos)
+    st.subheader("Base de datos de inspecciones")
+
+    # Selector de hoja
+    selected_sheet = st.selectbox("Selecciona la hoja para editar:", sheet_names)
+
+    # Cargar hoja seleccionada
+    worksheet = sh.worksheet(selected_sheet)
+    data = worksheet.get_all_records()
+    df_original = pd.DataFrame(data)
+
+    # Mostrar editor de datos
+    edited_df = st.data_editor(df_original, num_rows="dynamic", use_container_width=True)
+
+    # Guardar cambios
+    if st.button("Guardar cambios en Google Sheets"):
+        try:
+            # Limpia la hoja antes de escribir
+            worksheet.clear()
+            # Vuelve a escribir encabezados y valores
+            worksheet.update([edited_df.columns.values.tolist()] + edited_df.values.tolist())
+            st.success("Cambios guardados exitosamente. ✅")
+        except Exception as e:
+            st.error(f"Error al guardar: {e}")
