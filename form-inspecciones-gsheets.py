@@ -7,13 +7,14 @@ import numpy as np
 
 # Conexión a la Base de datos en Google Sheets
 conn = st.connection("gsheets", type=GSheetsConnection)
+spreadsheet_id = "1Zfsod0NcRCuOHsmFjMweubuGnLGR_TiErCamDoNyKwM"
 
 # Consulta de la información en la Base de datos
-inspecciones = conn.read(worksheet="inspecciones")
-vehiculos = conn.read(worksheet="vehiculos")
-rutas = conn.read(worksheet="rutas")
+inspecciones = conn.read(spreadsheet=spreadsheet_id, worksheet="inspecciones")
+vehiculos = conn.read(spreadsheet=spreadsheet_id, worksheet="vehiculos")
+rutas = conn.read(spreadsheet=spreadsheet_id, worksheet="rutas")
 rutas["numero_ruta"] = rutas["numero_ruta"].astype(int)
-partes = conn.read(worksheet="partes")
+partes = conn.read(spreadsheet=spreadsheet_id, worksheet="partes")
 partes_unicas = partes["parte"].unique()
 
 # Título de la página web
