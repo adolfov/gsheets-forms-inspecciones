@@ -5,8 +5,7 @@ import pandas as pd
 import numpy as np
 
 # Conexión a la Base de datos en Google Sheets
-from streamlit.connections import GSheetsConnection
-conn = st.connection("gsheets", type=GSheetsConnection)
+conn = st.connection("gsheets", , type="gspread")
 
 # Consulta de la información en la Base de datos
 inspecciones = conn.read(worksheet="inspecciones")
