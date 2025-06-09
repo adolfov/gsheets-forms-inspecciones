@@ -5,13 +5,11 @@ from streamlit_gsheets import GSheetsConnection
 import pandas as pd
 import numpy as np
 
-url = "https://docs.google.com/spreadsheets/d/1Zfsod0NcRCuOHsmFjMweubuGnLGR_TiErCamDoNyKwM/edit?gid=0"
-
 # Conexión a la Base de datos en Google Sheets
 conn = st.connection("gsheets", type=GSheetsConnection)
 
 # Consulta de la información en la Base de datos
-inspecciones = conn.read(spreadsheet=url, worksheet="inspecciones")
+inspecciones = conn.read(spreadsheet="https://docs.google.com/spreadsheets/d/1Zfsod0NcRCuOHsmFjMweubuGnLGR_TiErCamDoNyKwM", worksheet="inspecciones")
 vehiculos = conn.read(worksheet="vehiculos")
 rutas = conn.read(worksheet="rutas")
 rutas["numero_ruta"] = rutas["numero_ruta"].astype(int)
