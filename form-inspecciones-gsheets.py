@@ -13,8 +13,8 @@ creds = ServiceAccountCredentials.from_json_keyfile_dict(
 client = gspread.authorize(creds)
 
 # Abre hoja
-sheet = client.open_by_url("https://docs.google.com/spreadsheets/d/1Zfsod0NcRCuOHsmFjMweubuGnLGR_TiErCamDoNyKwM")
-conn = sheet.worksheet("inspecciones")
+sheet = client.open("inspecciones").sheet1
+conn = sheet.get_all_records()
 
 # Consulta de la información en la Base de datos
 inspecciones = conn.read(worksheet="inspecciones")
