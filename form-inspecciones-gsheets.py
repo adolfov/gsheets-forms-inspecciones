@@ -6,7 +6,7 @@ import pandas as pd
 import numpy as np
 
 # Conexión a la Base de datos en Google Sheets
-conn = st.experimental_connection("gsheets", type=GSheetsConnection)
+conn = st.connection("gsheets", type=GSheetsConnection)
 
 # Consulta de la información en la Base de datos
 inspecciones = conn.read(worksheet="inspecciones")
