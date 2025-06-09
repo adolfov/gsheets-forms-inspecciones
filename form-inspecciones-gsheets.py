@@ -5,7 +5,7 @@ from streamlit_gsheets import GSheetsConnection
 import pandas as pd
 import numpy as np
 
-url = "https://docs.google.com/spreadsheets/d/1Zfsod0NcRCuOHsmFjMweubuGnLGR_TiErCamDoNyKwM/edit?gid=0"
+url = "https://docs.google.com/spreadsheets/d/1Zfsod0NcRCuOHsmFjMweubuGnLGR_TiErCamDoNyKwM"
 
 # Conexión a la Base de datos en Google Sheets
 conn = st.connection("gsheets", type=GSheetsConnection)
