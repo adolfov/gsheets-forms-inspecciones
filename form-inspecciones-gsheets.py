@@ -175,8 +175,8 @@ with tab_1:
     df_inspeccion = pd.DataFrame(inspeccion)
 
     # Vista previa de la inspección
-    st.divider()
-    st.dataframe(inspeccion)
+    # st.divider()
+    # st.dataframe(inspeccion)
 
     # Guardar datos de la inspección
     st.divider()
