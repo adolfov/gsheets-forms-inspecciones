@@ -1,5 +1,4 @@
 streamlit
+streamlit_gsheets
 pandas
 numpy
-gspread
-oauth2client
