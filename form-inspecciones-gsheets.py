@@ -21,7 +21,7 @@ st.title("Inspecciones de vehículos de transporte público Va-y-Ven")
 
 # Pestañas de la página web
 tab_1, tab_2, tab_3 = st.tabs(["Formulario de inspecciones", "Consulta de Inspecciones",
-                               "Inspecciones"])
+                               "Vehículos"])
 
 # Pestaña 1: Formulario de inspecciones
 
