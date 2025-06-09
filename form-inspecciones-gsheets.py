@@ -1,20 +1,12 @@
 """ CREACIÓN DE FORMULARIO WEB CON STREAMLIT """
 
 import streamlit as st
+from streamlit_gsheets import GSheetsConnection
 import pandas as pd
 import numpy as np
-import gspread
-from oauth2client.service_account import ServiceAccountCredentials
 
-# Autenticación con secrets
-scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-creds = ServiceAccountCredentials.from_json_keyfile_dict(
-    st.secrets["google_service_account"], scope)
-client = gspread.authorize(creds)
-
-# Abre hoja
-sheet = client.open("inspecciones").sheet1
-conn = sheet.get_all_records()
+# Conexión a la Base de datos en Google Sheets
+conn = st.connection("gsheets", type=GSheetsConnection)
 
 # Consulta de la información en la Base de datos
 inspecciones = conn.read(worksheet="inspecciones")
