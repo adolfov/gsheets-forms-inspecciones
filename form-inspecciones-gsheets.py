@@ -236,5 +236,5 @@ with tab_2:
 
 with tab_3:
 
-    st.subheader("Base de datos de inspecciones")
-    st.dataframe(inspecciones)
+    st.subheader("Base de datos de Vehículos Va-y-Ven")
+    st.dataframe(vehiculos)
