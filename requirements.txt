@@ -1,4 +1,3 @@
-streamlit
-streamlit_gsheets
+streamlit>=1.23
 pandas
 numpy
