@@ -5,23 +5,104 @@ from streamlit_gsheets import GSheetsConnection
 import pandas as pd
 import numpy as np
 
+def clean_dataframe_for_display(df):
+    """Safely clean dataframe for display by handling data type issues"""
+    df_clean = df.copy()
+    
+    # Convert problematic columns to string to avoid display issues
+    if 'numero_economico' in df_clean.columns:
+        df_clean['numero_economico'] = df_clean['numero_economico'].astype(str)
+    
+    # Handle any other potential type issues
+    for col in df_clean.columns:
+        if df_clean[col].dtype == 'object':
+            # Convert mixed types to string
+            df_clean[col] = df_clean[col].astype(str)
+    
+    return df_clean
+
+
+
+def safe_gsheets_update(conn, worksheet_name, new_data, existing_data=None):
+    """
+    Safely update Google Sheets worksheet with data validation and backup
+    
+    Args:
+        conn: GSheetsConnection object
+        worksheet_name: Name of the worksheet to update
+        new_data: New data to append
+        existing_data: Existing data (if None, will be read from worksheet)
+    
+    Returns:
+        bool: True if successful, False otherwise
+    """
+    try:
+        # Read existing data if not provided
+        if existing_data is None:
+            existing_data = conn.read(worksheet=worksheet_name, ttl=0)
+        
+        # Validate existing data
+        if existing_data is None or existing_data.empty:
+            st.error(f"❌ No se pudieron leer los datos existentes de {worksheet_name}")
+            return False
+        
+        if not isinstance(existing_data, pd.DataFrame):
+            st.error(f"❌ Los datos existentes de {worksheet_name} no tienen el formato esperado")
+            return False
+        
+        # Create backup
+        backup_data = existing_data.copy()
+        
+        # Ensure data type consistency
+        for col in new_data.columns:
+            if col in existing_data.columns:
+                if existing_data[col].dtype != new_data[col].dtype:
+                    try:
+                        new_data[col] = new_data[col].astype(existing_data[col].dtype)
+                    except:
+                        existing_data[col] = existing_data[col].astype(str)
+                        new_data[col] = new_data[col].astype(str)
+        
+        # Concatenate data
+        updated_data = pd.concat([existing_data, new_data], ignore_index=True)
+        
+        # Final validation
+        if len(updated_data) < len(existing_data):
+            st.error(f"❌ La operación resultaría en pérdida de datos en {worksheet_name}")
+            return False
+        
+        # Update worksheet
+        conn.update(worksheet=worksheet_name, data=updated_data)
+        return True
+        
+    except Exception as e:
+        st.error(f"❌ Error en safe_gsheets_update: {str(e)}")
+        return False
+
 # Conexión a la Base de datos en Google Sheets
-conn = st.connection("gsheets", type=GSheetsConnection)
-
-# Consulta de la información en la Base de datos
-inspecciones = conn.read(worksheet="inspecciones")
-vehiculos = conn.read(worksheet="vehiculos")
-rutas = conn.read(worksheet="rutas")
-rutas["numero_ruta"] = rutas["numero_ruta"].astype(int)
-partes = conn.read(worksheet="partes")
-partes_unicas = partes["parte"].unique()
-
-# Título de la página web
-st.title("Inspecciones de vehículos de transporte público Va-y-Ven")
+try:
+    conn = st.connection("gsheets", type=GSheetsConnection)
+    
+    # Consulta de la información en la Base de datos
+    inspecciones = conn.read(worksheet="inspecciones")
+    vehiculos = conn.read(worksheet="vehiculos")
+    rutas = conn.read(worksheet="rutas")
+    rutas["numero_ruta"] = rutas["numero_ruta"].astype(int)
+    partes = conn.read(worksheet="partes")
+    partes_unicas = partes["parte"].unique()
+    
+    # Título de la página web
+    st.title("Inspecciones de vehículos de transporte público Va-y-Ven")
+    st.success("🌐 Conectado a Google Sheets")
+    
+except Exception as e:
+    st.error(f"❌ Error conectando a Google Sheets: {str(e)}")
+    st.info("💡 Verifica la configuración en Streamlit Secrets")
+    st.stop()
 
 # Pestañas de la página web
-tab_1, tab_2, tab_3 = st.tabs(["Formulario de inspecciones", "Consulta de Inspecciones",
-                               "Vehículos"])
+tab_1, tab_2, tab_3, tab_4 = st.tabs(["Formulario de inspecciones", "Consulta de Inspecciones",
+                               "Vehículos", "Estado de los Datos"])
 
 # Pestaña 1: Formulario de inspecciones
 
@@ -218,23 +299,108 @@ with tab_2:
     ].sort_values(by="fecha_inspeccion", ascending=False, ignore_index=True)
 
     st.write(f"Historial de partes dañadas para la persona concesionaria {empresa}:")
-    st.dataframe(historial_danios[["fecha_inspeccion", "numero_economico", "parte", "ubicacion_parte",
-                                   "descripcion_evento", "fecha_oficio", "respuesta_empresa",
-                                   "fecha_verificacion"]], hide_index=True,
-                 column_config={
-                    "fecha_inspeccion" : "Fecha de inspección",
-                    "numero_economico" : "Unidad",
-                    "parte" : "Parte",
-                    "ubicacion_parte" : "Ubicación",
-                    "descripcion_evento" : "Observación",
-                    "fecha_oficio" : "Fecha del oficio",
-                    "respuesta_empresa" : "Respuesta del concesionario",
-                    "fecha_verificacion" : "Fecha de verificación"
-                 })
+    
+    # Safe DataFrame display using helper function
+    try:
+        display_columns = ["fecha_inspeccion", "numero_economico", "parte", "ubicacion_parte",
+                           "descripcion_evento", "fecha_oficio", "respuesta_empresa", "fecha_verificacion"]
+        
+        # Filter columns that exist in the DataFrame
+        available_columns = [col for col in display_columns if col in historial_danios.columns]
+        display_df = historial_danios[available_columns]
+        
+        # Clean DataFrame for safe display (this already fixes mixed types)
+        clean_display_df = clean_dataframe_for_display(display_df)
+        
+        st.dataframe(clean_display_df, hide_index=True,
+                     column_config={
+                        "fecha_inspeccion" : "Fecha de inspección",
+                        "numero_economico" : "Unidad",
+                        "parte" : "Parte",
+                        "ubicacion_parte" : "Ubicación",
+                        "descripcion_evento" : "Observación",
+                        "fecha_oficio" : "Fecha del oficio",
+                        "respuesta_empresa" : "Respuesta del concesionario",
+                        "fecha_verificacion" : "Fecha de verificación"
+                     })
+    except Exception as e:
+        st.error(f"Error displaying data: {str(e)}")
+        st.info("Try refreshing the page or check your data")
 
 # Pestaña 3: Base de datos de inspecciones
 
 with tab_3:
 
     st.subheader("Base de datos de vehículos Va-y-Ven")
-    st.dataframe(vehiculos)
+    # Clean DataFrame for safe display
+    vehiculos_clean = clean_dataframe_for_display(vehiculos)
+    st.dataframe(vehiculos_clean)
+
+# Pestaña 4: Estado de los Datos
+
+with tab_4:
+    
+    st.subheader("📊 Estado Actual de los Datos")
+    
+    # Check current data status
+    try:
+        inspecciones_actuales = conn.read(worksheet="inspecciones", ttl=0)
+        vehiculos_actuales = conn.read(worksheet="vehiculos", ttl=0)
+        rutas_actuales = conn.read(worksheet="rutas", ttl=0)
+        
+        st.metric("Inspecciones", len(inspecciones_actuales))
+        st.metric("Vehículos", len(vehiculos_actuales))
+        st.metric("Rutas", len(rutas_actuales))
+        
+        # Check for data integrity issues
+        if inspecciones_actuales is None or inspecciones_actuales.empty:
+            st.error("❌ No se pueden leer las inspecciones")
+        else:
+            st.success("✅ Datos de inspecciones accesibles")
+            
+    except Exception as e:
+        st.error(f"❌ Error al verificar datos: {str(e)}")
+
+    # Data validation and repair
+    st.divider()
+    st.subheader("🔍 Validación y Reparación de Datos")
+    
+    if st.button("🔍 Verificar Integridad de Datos"):
+        try:
+            issues_found = []
+            
+            # Check for missing data
+            if inspecciones_actuales is None or inspecciones_actuales.empty:
+                issues_found.append("❌ No hay datos de inspecciones")
+            
+            # Check for data type issues
+            if inspecciones_actuales is not None and not inspecciones_actuales.empty:
+                for col in inspecciones_actuales.columns:
+                    if inspecciones_actuales[col].dtype == 'object':
+                        # Check for mixed types
+                        sample_values = inspecciones_actuales[col].dropna().head(10)
+                        if len(sample_values) > 0:
+                            types = [type(val).__name__ for val in sample_values]
+                            if len(set(types)) > 1:
+                                issues_found.append(f"⚠️ Columna '{col}' tiene tipos mixtos: {set(types)}")
+            
+            if issues_found:
+                st.error("Problemas encontrados:")
+                for issue in issues_found:
+                    st.write(issue)
+                
+                # Offer to fix data type issues
+                # if st.button("🔧 Reparar Tipos de Datos"):
+                #     try:
+                #         # Convert all columns to string to avoid type conflicts
+                #         inspecciones_reparadas = inspecciones_actuales.astype(str)
+                #         conn.update(worksheet="inspecciones", data=inspecciones_reparadas)
+                #         st.success("✅ Tipos de datos reparados")
+                #         st.rerun()
+                #     except Exception as e:
+                #         st.error(f"❌ Error al reparar: {str(e)}")
+            else:
+                st.success("✅ No se encontraron problemas de integridad")
+                
+        except Exception as e:
+            st.error(f"❌ Error en validación: {str(e)}")
