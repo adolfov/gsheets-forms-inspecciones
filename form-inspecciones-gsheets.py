@@ -18,6 +18,8 @@ def clean_dataframe_for_display(df):
         if df_clean[col].dtype == 'object':
             # Convert mixed types to string
             df_clean[col] = df_clean[col].astype(str)
+            # Replace "nan" strings and empty strings with None for cleaner display
+            df_clean[col] = df_clean[col].replace(['nan', ''], None)
     
     return df_clean
 
