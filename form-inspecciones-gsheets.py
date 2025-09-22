@@ -4,6 +4,12 @@ import streamlit as st
 from streamlit_gsheets import GSheetsConnection
 import pandas as pd
 import numpy as np
+import time
+
+@st.cache_data(ttl=300)  # Cache for 5 minutes
+def get_worksheet_data(conn, worksheet_name):
+    """Simple cached function to get worksheet data"""
+    return conn.read(worksheet=worksheet_name)
 
 def clean_dataframe_for_display(df):
     """Safely clean dataframe for display by handling data type issues"""
@@ -85,17 +91,22 @@ def safe_gsheets_update(conn, worksheet_name, new_data, existing_data=None):
 try:
     conn = st.connection("gsheets", type=GSheetsConnection)
     
-    # Consulta de la información en la Base de datos
-    inspecciones = conn.read(worksheet="inspecciones")
-    vehiculos = conn.read(worksheet="vehiculos")
-    rutas = conn.read(worksheet="rutas")
+    # Consulta de la información en la Base de datos con cache simple
+    inspecciones = get_worksheet_data(conn, "inspecciones")
+    vehiculos = get_worksheet_data(conn, "vehiculos")
+    rutas = get_worksheet_data(conn, "rutas")
     rutas["numero_ruta"] = rutas["numero_ruta"].astype(int)
-    partes = conn.read(worksheet="partes")
+    partes = get_worksheet_data(conn, "partes")
     partes_unicas = partes["parte"].unique()
     
     # Título de la página web
     st.title("Inspecciones de vehículos de transporte público Va-y-Ven")
     st.success("🌐 Conectado a Google Sheets")
+    
+    # Simple refresh button
+    if st.button("🔄 Actualizar Datos"):
+        st.cache_data.clear()
+        st.rerun()
     
 except Exception as e:
     st.error(f"❌ Error conectando a Google Sheets: {str(e)}")
@@ -344,11 +355,11 @@ with tab_4:
     
     st.subheader("📊 Estado Actual de los Datos")
     
-    # Check current data status
+    # Check current data status using cached data
     try:
-        inspecciones_actuales = conn.read(worksheet="inspecciones", ttl=0)
-        vehiculos_actuales = conn.read(worksheet="vehiculos", ttl=0)
-        rutas_actuales = conn.read(worksheet="rutas", ttl=0)
+        inspecciones_actuales = inspecciones
+        vehiculos_actuales = vehiculos
+        rutas_actuales = rutas
         
         st.metric("Inspecciones", len(inspecciones_actuales))
         st.metric("Vehículos", len(vehiculos_actuales))
