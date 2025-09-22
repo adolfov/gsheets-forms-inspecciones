@@ -7,9 +7,9 @@ import numpy as np
 import time
 
 @st.cache_data(ttl=300)  # Cache for 5 minutes
-def get_worksheet_data(conn, worksheet_name):
+def get_worksheet_data(_conn, worksheet_name):
     """Simple cached function to get worksheet data"""
-    return conn.read(worksheet=worksheet_name)
+    return _conn.read(worksheet=worksheet_name)
 
 def clean_dataframe_for_display(df):
     """Safely clean dataframe for display by handling data type issues"""
